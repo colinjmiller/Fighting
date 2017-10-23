@@ -6,38 +6,63 @@ public class Enemy : MonoBehaviour {
 
 	public float speed;
 	public Vector3[] waypoints;
+	public float stageZeroDuration;
+	public float stageOneDuration;
+	public float stageTwoDuration;
 
 	private LineRenderer lineRenderer;
 	private int currentWaypointIndex;
-
 	private int currentStage;
+	private float currentTime;
+
+	private bool inCombat;
 
 	void Start () {
 		lineRenderer = GetComponent<LineRenderer> ();
-		currentWaypointIndex = 0;
-		currentStage = 0;
+		inCombat = false;
+		reset ();
 	}
 
 	void Update () {
-		if (Input.GetMouseButtonDown (1)) {
-			currentStage++;
+		if (!inCombat) {
+			return;
 		}
 
-		switch (currentStage) {
-			case 1:
-				showProjectedPath ();
-				break;
-			case 2:
-				hideProjectedPath ();
-				break;
-			case 3:
-				enemyMovements ();
-				break;
+		currentTime += Time.deltaTime;
+		updateStage ();
+
+		if (currentStage == 1) {
+			showProjectedPath ();
+		} else if (currentStage == 2) {
+			hideProjectedPath ();
+		} else if (currentStage == 3) {
+			enemyMovements ();
 		}
 	}
 
 	void OnCollisionEnter2D() {
         Destroy (gameObject);
+	}
+
+	public void beginCombat() {
+		inCombat = true;
+		reset ();
+	}
+
+	private void reset() {
+		currentTime = 0f;
+		currentStage = 0;
+		currentWaypointIndex = 0;
+	}
+
+	private void updateStage() {
+		bool moveToNextStage = (currentStage == 0 && currentTime > stageZeroDuration);
+		moveToNextStage = moveToNextStage || (currentStage == 1 && currentTime > (stageZeroDuration + stageOneDuration));
+		moveToNextStage = moveToNextStage || (currentStage == 2 && currentTime > (stageZeroDuration + stageOneDuration + stageTwoDuration));
+
+		if (moveToNextStage) {
+			currentStage++;
+		}
 	}
 
 	private void showProjectedPath() {
