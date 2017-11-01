@@ -12,12 +12,13 @@ public class FightManager : MonoBehaviour {
     public GameObject enemy;
 
     private int TOTAL_OPTIONS = 3;
-    private int cursorPosition;
+    private int TOTAL_ENEMY_STAGES = 3;
+    private int menuPosition;
     private bool enemyTurn;
     private Enemy enemyAPI;
 
     void Awake() {
-        cursorPosition = 2;
+        menuPosition = 2;
         enemyTurn = false;
         enemyAPI = enemy.GetComponent<Enemy> ();
     }
@@ -26,12 +27,21 @@ public class FightManager : MonoBehaviour {
 	void Update () {
         if (enemyTurn && enemyAPI.getStatus() == enemyAPI.COMPLETE) {
             Debug.Log ("Stage " + enemyAPI.getStage () + " has ended");
-            enemyAPI.setStage (enemyAPI.getStage() + 1);
-            enemyAPI.hideProjectedPath ();
+
+            if (enemyAPI.getStage () == TOTAL_ENEMY_STAGES) {
+                Debug.Log ("Enemy's turn has ended");
+                enemyTurn = false;
+            } else {
+                enemyAPI.setStage (enemyAPI.getStage() + 1);
+            }
         }
 
         if (enemyTurn && enemyAPI.getStage () == 1) {
             enemyAPI.showProjectedPath ();
+        }
+
+        if (enemyTurn && enemyAPI.getStage () == 2) {
+            enemyAPI.hideProjectedPath ();
         }
 
         if (enemyTurn && enemyAPI.getStage () == 3) {
@@ -40,9 +50,9 @@ public class FightManager : MonoBehaviour {
 
         checkForMenuChanges ();
         if (Input.GetKeyDown (KeyCode.Space)) {
-            if (cursorPosition == 0) {
+            if (menuPosition == 0) {
                 Debug.Log ("Attempt escape");
-            } else if (cursorPosition == 1) {
+            } else if (menuPosition == 1) {
                 Debug.Log ("Call unimplemented item API");
             } else {
                 enemyTurn = true;
@@ -54,21 +64,21 @@ public class FightManager : MonoBehaviour {
 
     private void checkForMenuChanges() {
         if (Input.GetKeyDown (KeyCode.DownArrow)) {
-            cursorPosition--;
-            if (cursorPosition < 0) {
-                cursorPosition = TOTAL_OPTIONS - 1;
+            menuPosition--;
+            if (menuPosition < 0) {
+                menuPosition = TOTAL_OPTIONS - 1;
             }
         }
         if (Input.GetKeyDown (KeyCode.UpArrow)) {
-            cursorPosition = (cursorPosition + 1) % TOTAL_OPTIONS;
+            menuPosition = (menuPosition + 1) % TOTAL_OPTIONS;
         }
-        cursor.transform.position = getCursorPosition ();
+        cursor.transform.position = getMenuPosition ();
     }
 
-    private Vector3 getCursorPosition() {
-        if (cursorPosition == 0) {
+    private Vector3 getMenuPosition() {
+        if (menuPosition == 0) {
             return new Vector3 (cursor.transform.position.x, escapeText.transform.position.y, 0);
-        } else if (cursorPosition == 1) {
+        } else if (menuPosition == 1) {
             return new Vector3 (cursor.transform.position.x, itemText.transform.position.y, 0);
         } else {
             return new Vector3 (cursor.transform.position.x, fightText.transform.position.y, 0);
