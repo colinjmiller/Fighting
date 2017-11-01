@@ -5,10 +5,11 @@ using UnityEngine;
 public class Enemy : MonoBehaviour {
 
 	public float speed;
-	public Vector3[] waypoints;
+	public Vector3[] waypoints; // TODO: Make part of projectile
 	public float stageZeroDuration;
 	public float stageOneDuration;
 	public float stageTwoDuration;
+    public GameObject[] projectiles;
 
     public string BLOCKING = "blocking";
     public string COMPLETE = "complete";
@@ -17,6 +18,7 @@ public class Enemy : MonoBehaviour {
 	private int currentWaypointIndex;
 	private int currentStage;
 	private float currentTime;
+    private GameObject[] currentProjectiles;
 
 	void Start () {
 		lineRenderer = GetComponent<LineRenderer> ();
@@ -33,6 +35,15 @@ public class Enemy : MonoBehaviour {
     public void setStage(int stage) {
         currentStage = stage;
         currentTime = 0f;
+
+        // TODO: Break this out into an array of methods so I can do things like
+        //       stagePrep[stage]();
+        if (stage == 3) {
+            currentProjectiles = new GameObject[projectiles.Length];
+            for (int i = 0; i < projectiles.Length; i++) {
+                currentProjectiles [i] = Instantiate (projectiles [i], transform);
+            }
+        }
     }
 
     public int getStage() {
@@ -61,12 +72,15 @@ public class Enemy : MonoBehaviour {
 		lineRenderer.SetPositions(new Vector3[0]);
 	}
 
+    // TODO: This needs to move to an individual projectile script. This is ludicrous.
     public void move() {
-        if (currentWaypointIndex < waypoints.Length) {
-            Vector3 currentWaypoint = waypoints [currentWaypointIndex];
-            transform.position = Vector3.MoveTowards (transform.position, currentWaypoint, speed * Time.deltaTime);
-            if (transform.position == currentWaypoint) {
-                currentWaypointIndex++;
+        foreach (GameObject projectile in currentProjectiles) {
+            if (currentWaypointIndex < waypoints.Length) {
+                Vector3 currentWaypoint = waypoints [currentWaypointIndex];
+                transform.position = Vector3.MoveTowards (transform.position, currentWaypoint, speed * Time.deltaTime);
+                if (transform.position == currentWaypoint) {
+                    currentWaypointIndex++;
+                }
             }
         }
     }
